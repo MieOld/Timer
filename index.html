@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+
+  <title>浮生刻度</title>
+  <style>
+    body { margin: 0; overflow: hidden; 
+      background: linear-gradient(to right, #FFC0CB, #FFFFFF); /* 从左到右粉白渐变 */}
+    canvas { display: block; }
+    #ui {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      color: black;
+      font-family: 'PingFang SC', sans-serif;
+      z-index: 10;
+    }
+    #ui input, #ui button {
+      font-size: 16px;
+      margin: 5px;
+    }
+
+     /* 浮生刻度标题 */
+     .title {
+            font-size: 48px; /* 大字号 */
+            font-family: 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC', 'SimSun', sans-serif;
+
+
+
+
+            color: #333; /* 深色字体 */
+            margin-bottom: 20px;
+        }
+  </style>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.163.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.163.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div id="ui">
+    <!-- 浮生刻度标题 -->
+    <label for="tit" class="title">晨曦暮钟</label><br>
+    
+    <!-- 换行后显示 Set Timer -->
+    <label for="timer" class="label">时间设置</label><br>
+    <input id="timer" type="number" class="input" min="1" placeholder="Enter time...">
+    
+    <!-- 启动按钮 -->
+    <button id="start" class="button">开始计时</button>
+
+  </div>
+
+  <script type="module">
+    import * as THREE from 'three';
+    import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+    import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+  
+    // 创建场景和相机
+    const scene = new THREE.Scene();
+  
+    const aspect = window.innerWidth / window.innerHeight;
+    const camera = new THREE.OrthographicCamera(
+      -10 * aspect, // 左
+      10 * aspect,  // 右
+      10,           // 上
+      -10,          // 下
+      0.1,          // 近裁剪面
+      1000          // 远裁剪面
+    );
+    camera.position.set(0, 30, 0); // 初始位置较近
+  
+    scene.background = new THREE.Color(0xF6FEFC); // 设置背景颜色为浅蓝色
+    
+  
+    // 渲染器
+    const renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.5;
+    renderer.outputEncoding = THREE.sRGBEncoding;
+  
+    // 光源
+    const ambientLight = new THREE.AmbientLight(0xffffff, 1.0);
+    scene.add(ambientLight);
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 2);
+    directionalLight.position.set(10, 10, 10);
+    scene.add(directionalLight);
+  
+    // 轨道控制器
+// 轨道控制器
+const controls = new OrbitControls(camera, renderer.domElement);
+
+
+
+// 限制水平旋转范围（左右旋转）
+controls.minAzimuthAngle = -Math.PI / 2; // 最小水平角度，-90度
+controls.maxAzimuthAngle = Math.PI / 2;  // 最大水平角度，90度
+
+// 禁止垂直旋转（仅允许水平旋转）
+controls.minPolarAngle = Math.PI / 2; // 最小垂直角度，90度
+controls.maxPolarAngle = Math.PI / 2; // 最大垂直角度，90度
+
+controls.update();
+
+  
+    // 动态变量
+    let balls = [];
+    let needle;
+  
+    // 加载 GLB 模型
+    const loader = new GLTFLoader();
+    loader.load('./models/scene.glb', function (gltf) {
+      const model = gltf.scene;
+      model.position.set(0, 0, 0);
+      scene.add(model);
+
+        // 修正模型的旋转
+  model.rotation.x = Math.PI / 2;; // 如果有不必要的 X 旋转，调整为 0
+  model.rotation.y = 0; // 旋转 90 度（或根据需要调整）
+  model.rotation.z = 0;
+  
+      createRotatingNeedle();
+      createClockBalls();
+    });
+
+
+  
+    // 创建针对象
+    function createRotatingNeedle() {
+      const needleGeometry = new THREE.CylinderGeometry(0.18, 0.08, 6, 32);
+      const needleMaterial = new THREE.MeshStandardMaterial({ color: 0xFA50B1 });
+      needle = new THREE.Mesh(needleGeometry, needleMaterial);
+      needle.position.set(0, 0, 0);
+      needle.rotation.z = Math.PI / 2;
+      scene.add(needle);
+    }
+  
+    // 创建 5 个小球
+    function createClockBalls() {
+  const radius = 4.5;
+
+  for (let i = 0; i < 5; i++) {
+    const angle = (i / 5) * Math.PI * 2;
+    const x = Math.cos(angle) * radius;
+    const z = 0;
+    const y = Math.sin(angle) * radius;
+
+    // 创建独立材质
+    const ballMaterial = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+    const ballGeometry = new THREE.SphereGeometry(0.5, 32, 32);
+    const ball = new THREE.Mesh(ballGeometry, ballMaterial);
+
+    ball.position.set(x, y, z);
+    scene.add(ball);
+    balls.push(ball);
+  }
+}
+
+
+    function animateBall(ball) {
+  // 缩放动画（变大）
+  gsap.to(ball.scale, { x: 1.5, y: 1.5, z: 1.5, duration: 0.2, yoyo: true, repeat: 1 });
+  
+  // 震动动画
+  gsap.to(ball.position, { x: ball.position.x + 0.2, duration: 0.1, yoyo: true, repeat: 5 });
+  
+
+}
+
+function changeBallColor(ball) {
+  // 颜色变化（变成粉色）
+  gsap.to(ball.material.color, {
+    r: 0.1,   // 粉色的红色分量
+    g: 0, // 粉色的绿色分量
+    b: 0.1,  // 粉色的蓝色分量
+    duration: 0.5 // 动画持续时间
+  });
+}
+
+
+
+
+// 获取按钮并绑定点击事件
+document.getElementById('start').addEventListener('click', () => {
+  const totalTime = parseFloat(document.getElementById('timer').value) || 10; // 默认时间为 10 秒
+  const interval = totalTime / 5; // 每次触发动画的时间间隔
+
+  let currentIndex = 0;
+
+  const timer = setInterval(() => {
+    if (currentIndex < balls.length) {
+      animateBall(balls[currentIndex]); // 对应小球触发动画
+      changeBallColor(balls[currentIndex]);
+      currentIndex++;
+    } else {
+      clearInterval(timer); // 清除计时器
+    }
+  }, interval * 1000); // 将间隔转换为毫秒
+});
+
+  
+    // 页面加载时触发视角移动动画
+    window.onload = () => {
+      animateCamera();
+    };
+  
+    // 相机的视角移动动画
+    function animateCamera() {
+  if (!camera) {
+    console.error('Camera is not initialized!');
+    return;
+  }
+
+  gsap.to(camera, {
+    duration: 2,          // 动画持续时间
+    zoom: 0.4,            // 最终缩放值
+    delay: 1,             // 延迟 2 秒后开始动画
+    onUpdate: () => camera.updateProjectionMatrix() // 更新投影矩阵
+  });
+}
+
+
+  
+    // 渲染循环
+    function animate() {
+      requestAnimationFrame(animate);
+  
+      // 针的旋转动画
+      if (needle) {
+        needle.rotation.z -= (Math.PI * 2) / (60 * 60); // 每秒 1/60 圈
+      }
+  
+      controls.update();
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    
+  </script>
+  
+  
+</body>
+</html>
