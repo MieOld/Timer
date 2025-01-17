@@ -20,6 +20,8 @@
     border-radius: 30px; /* 圆角 */
     box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1); /* 添加阴影 */
     transition: border-color 0.3s, box-shadow 0.3s; /* 动画效果 */
+    margin-bottom: 30px;
+    margin-top: 50px;
   }
 
   .input:focus {
@@ -28,44 +30,36 @@
     outline: none; /* 移除默认高亮边框 */
   }
 
-  /* 按钮样式 */
-  .button {
-    width: 220px; /* 按钮宽度 */
-    height: 45px; /* 按钮高度 */
-    font-size: 18px; /* 字体大小 */
-    font-weight: bold; /* 字体加粗 */
-    color: white; /* 字体颜色 */
-    background-color: #F88799; /* 按钮背景颜色 */
-    border: none; /* 移除默认边框 */
-    border-radius: 30px; /* 圆角 */
-    cursor: pointer; /* 鼠标样式 */
-    transition: background-color 0.3s, transform 0.2s; /* 动画效果 */
-  }
+/* 按钮样式 */
+.button {
+  width: 220px; /* 按钮宽度 */
+  height: 45px; /* 按钮高度 */
+  font-size: 18px; /* 字体大小 */
+  font-weight: bold; /* 字体加粗 */
+  color: white; /* 字体颜色 */
+  background: linear-gradient(90deg, #F464B4, #FFD1DC); /* 粉白渐变背景 */
+  border: none; /* 移除默认边框 */
+  border-radius: 30px; /* 圆角 */
+  cursor: pointer; /* 鼠标样式 */
+  transition: background 0.3s, transform 0.2s; /* 动画效果 */
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* 添加轻微阴影 */
+   margin-bottom: 20px;
+  
+}
 
-  .button:hover {
-    background-color: #E040A0; /* 悬停时背景颜色 */
-    transform: scale(1.05); /* 悬停时放大 */
-  }
+/* 鼠标悬停效果 */
+.button:hover {
+  background: linear-gradient(90deg, #FFD1DC, #F464B4); /* 渐变方向反转 */
+  transform: scale(1.05); /* 放大按钮 */
+}
+
 
   .button:active {
     background-color: #C03080; /* 按下时背景颜色 */
     transform: scale(0.95); /* 按下时缩小 */
   }
     
-    
-    canvas { display: block; }
-    #ui {
-      position: absolute;
-      top:80px;
-      left: 80px;
-      color: #7AC48C;
-      font-family: 'PingFang SC', sans-serif;
-      z-index: 10;
-    }
-    #ui input, #ui button {
-      font-size: 20px;
-      margin: 10px;
-    }
+   
 
      /* 浮生刻度标题 */
      .title {
@@ -73,9 +67,30 @@
             font-family: 'Microsoft YaHei', 'Noto Sans SC', 'SimSun';
             font-weight: bold; /* 字体加粗 */
 
-            color: #0D7049; /* 深色字体 */
-            margin-bottom: 50px;
+            color: #0e3626; /* 深色字体 */
         }
+
+        .sub {
+            font-size: 24px; /* 大字号 */
+            font-family: 'Microsoft YaHei', 'Noto Sans SC', 'SimSun';
+            font-weight: normal; /* 字体加粗 */
+
+            color: #0e3626; /* 深色字体 */
+        }
+
+        #ui {
+  width: 300px; /* 容器宽度 */
+  padding: 20px; /* 内边距 */
+  background: rgba(206, 231, 217, 0.6); /* 半透明白色背景 */
+  border-radius: 15px; /* 圆角 */
+  box-shadow: 0px 4px 10px rgba(25, 153, 95, 0.1); /* 阴影效果 */
+  text-align: center; /* 文本居中 */
+  position: absolute; /* 绝对定位 */
+  top: 100px; /* 距离视口顶部 20px */
+  left: 80px; /* 距离视口左侧 20px */
+  z-index: 10; /* 确保在 three.js 渲染内容上层 */
+}
+
   </style>
   <script type="importmap">
   {
@@ -89,10 +104,10 @@
 <body>
   <div id="ui">
     <!-- 浮生刻度标题 -->
-    <label for="tit" class="title">晨曦暮钟</label><br>
+    <label for="tit" class="title">MieOld</label><br>
+    <label for="tit" class="sub">Pomodoro Timer</label><br>
     
     <!-- 换行后显示 Set Timer -->
-    <label for="timer" class="label">时间设置</label><br>
     <input id="timer" type="number" class="input" min="1" placeholder="计划专注时长"><br>
     
     <!-- 启动按钮 -->
@@ -119,7 +134,7 @@
     );
     camera.position.set(0, 30, 0); // 初始位置较近
   
-    scene.background = new THREE.Color(0xE4E2D3); // 设置背景颜色为浅蓝色
+    scene.background = new THREE.Color(0xECE7ED); // 设置背景颜色为浅蓝色
     
   
     // 渲染器
@@ -185,13 +200,20 @@ controls.update();
       needle.rotation.z = Math.PI / 2;
       scene.add(needle);
     }
+
+    
+
+
+
+  
   
     // 创建 5 个小球
     function createClockBalls() {
   const radius = 4.5;
+  const offsetAngle = (125 / 360) * Math.PI * 2; // 30度转换为弧度
 
   for (let i = 0; i < 5; i++) {
-    const angle = (i / 5) * Math.PI * 2;
+    const angle = (i / 5) * Math.PI * 2+ offsetAngle;
     const x = Math.cos(angle) * radius;
     const z = 0;
     const y = Math.sin(angle) * radius;
